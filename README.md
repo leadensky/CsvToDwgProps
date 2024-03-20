@@ -1,0 +1,1 @@
+An attendee from one of my AU classes asked if I knew of an existing program that could read data from an Excel file to populate custom properties in an Autocad file (DwgProps). I didn't, but had done all the pieces in one way or another, so I cobbled this together.
