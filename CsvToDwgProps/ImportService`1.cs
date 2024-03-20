@@ -8,12 +8,25 @@ using System.Linq;
 
 namespace CsvToDwgProps
 {
-    public class DwgPropImportService
+    public class ImportService<T>
     {
-        public IReadOnlyList<ImportProps> Read(string filePath)
+        public IReadOnlyList<T> Read(string filePath)
         {
-            var results = new List<ImportProps>();
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            var results = new List<T>();
+            var config = GetConfig();
+
+            using (var reader = new StreamReader(filePath))
+            {
+                using (var csv = new CsvReader(reader, config))
+                {
+                    return csv.GetRecords<T>().ToList();
+                }
+            }
+        }
+
+        protected virtual CsvConfiguration GetConfig()
+        {
+            return new CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 PrepareHeaderForMatch = args =>
                 {
@@ -25,15 +38,6 @@ namespace CsvToDwgProps
                 MissingFieldFound = null,
                 HeaderValidated = null
             };
-
-            using (var reader = new StreamReader(filePath))
-            {
-                using (var csv = new CsvReader(reader, config))
-                {
-                    return csv.GetRecords<ImportProps>().ToList();
-                }
-            }
-
         }
     }
 }

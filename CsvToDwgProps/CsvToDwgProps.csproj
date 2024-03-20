@@ -43,6 +43,9 @@
       <HintPath>..\..\..\..\..\..\Autodesk\ObjectARX_for_AutoCAD_2022_Win_64bit_dlm\inc\AcMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="CSharpFunctionalExtensions, Version=2.41.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CSharpFunctionalExtensions.2.41.0\lib\net461\CSharpFunctionalExtensions.dll</HintPath>
+    </Reference>
     <Reference Include="CsvHelper, Version=31.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\packages\CsvHelper.31.0.2\lib\net48\CsvHelper.dll</HintPath>
     </Reference>
@@ -81,9 +84,9 @@
   <ItemGroup>
     <Compile Include="Active.cs" />
     <Compile Include="DatabaseExtensions.cs" />
-    <Compile Include="DwgPropImportService.cs" />
     <Compile Include="FileSelector.cs" />
     <Compile Include="ImportProps.cs" />
+    <Compile Include="ImportService`1.cs" />
     <Compile Include="MyCommands.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Runtime;
+using CSharpFunctionalExtensions;
 using System;
 using System.IO;
 using System.Linq;
@@ -18,36 +19,48 @@ namespace CsvToDwgProps
         [CommandMethod("CSV_TO_DWGPROPS")]
         public void CsvToDwgProps()
         {
+            SelectSourceFile()
+                .Tap(fn =>
+                {
+                    /* assume the CSV file is in same directory as the drawings? */
+                    var csvFolderPath = Path.GetDirectoryName(fn);
+
+                    var importer = new ImportService<ImportProps>();
+                    var imports = importer.Read(fn);
+
+                    foreach (var import in imports)
+                    {
+                        /* if the full dwgPath is not specified in the CSV, use the CSV folder path */
+                        var dwgFolderPath = Path.GetDirectoryName(import.DwgName);
+                        if (string.IsNullOrEmpty(dwgFolderPath))
+                            dwgFolderPath = csvFolderPath;
+
+                        var fullDwgPath = Path.Combine(dwgFolderPath, import.DwgName);
+                        if (File.Exists(fullDwgPath))
+                        {
+                            UpdateDwgProps(fullDwgPath, import);
+                            Active.Editor.WriteMessage($"\nUpdated {fullDwgPath}");
+                        }
+                        else
+                        {
+                            Active.Editor.WriteMessage($"\nFile not found: {fullDwgPath}");
+                        }
+                    }
+
+                })
+                .TapError(err => Active.Editor.WriteMessage(err));
+        }
+
+        Result<string> SelectSourceFile()
+        {
             var openDialog = new FileSelector();
             var result = openDialog.ShowDialog("CSV files|*.csv", 0, multiSelect: false);
             if (result != DialogResult.OK)
             {
-                Active.Editor.WriteMessage("\nUser cancelled.");
-                return;
+                return Result.Failure<string>("\nUser cancelled.");
             }
 
-
-            var fullCsvFilePath = openDialog.FileNames[0];
-            /* assume the CSV file is in same directory as the drawings? */
-            var csvFolderPath = Path.GetDirectoryName(fullCsvFilePath);
-
-            var importer = new DwgPropImportService();
-            var imports = importer.Read(fullCsvFilePath);
-
-            foreach (var import in imports)
-            {
-                /* if the full dwgPath is specified in the CSV, then don't use the next line */
-                var dwgPath = Path.Combine(csvFolderPath, import.DwgName);
-                if (File.Exists(dwgPath))
-                {
-                    UpdateDwgProps(dwgPath, import);
-                    Active.Editor.WriteMessage($"\nUpdated {dwgPath}");
-                }
-                else
-                {
-                    Active.Editor.WriteMessage($"\nFile not found: {dwgPath}");
-                }
-            }
+            return Result.Success(openDialog.FileNames[0]);
         }
 
         void UpdateDwgProps(string fullFilePath, ImportProps propsToImport)
